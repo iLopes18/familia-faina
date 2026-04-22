@@ -504,6 +504,23 @@ export default function ProfileView() {
                     onChange={(newConfig) => setAvatarConfig(newConfig)} 
                   />
                 </div>
+
+                <div className="md:col-span-2 pt-6 border-t border-red-100 mt-6">
+                  <div className="bg-red-50 rounded-2xl border border-red-100 p-6">
+                    <h3 className="text-base font-bold text-red-800 mb-2">Zona de Perigo</h3>
+                    <p className="text-red-600 text-xs mb-4">
+                      Ao sair da família, o seu perfil e todos os seus descendentes serão
+                      permanentemente removidos. Esta ação não pode ser desfeita.
+                    </p>
+                    <button
+                      onClick={handleSelfExclusion}
+                      disabled={loading}
+                      className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-xl transition-colors text-sm font-bold disabled:opacity-50"
+                    >
+                      Excluir Permanentemente da Família
+                    </button>
+                  </div>
+                </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <button
@@ -707,21 +724,6 @@ export default function ProfileView() {
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="bg-red-50 rounded-3xl border border-red-200 p-8 shadow-sm">
-            <h3 className="text-lg font-bold text-red-800 mb-2">Zona de Perigo</h3>
-            <p className="text-red-600 text-sm mb-6 max-w-2xl">
-              Ao sair da família, o seu perfil e todos os seus descendentes serão
-              permanentemente removidos da base de dados. Esta ação não pode ser desfeita.
-            </p>
-            <button
-              onClick={handleSelfExclusion}
-              disabled={loading}
-              className="px-6 py-2.5 bg-red-600 text-white hover:bg-red-700 rounded-2xl transition-colors font-bold shadow-lg shadow-red-100 disabled:opacity-50"
-            >
-              Excluir Permanentemente da Família
-            </button>
           </div>
         </>
       )}
