@@ -126,7 +126,7 @@ export default function Login() {
               <label className="block text-sm font-medium text-slate-700">
                 Username
               </label>
-              <p className="text-xs text-slate-500 mb-1">Formato: primeironomeultimonome (ex: renatovala)</p>
+              <p className="text-xs text-slate-500 mb-1">Formato: primeironomeultimonome (ex: isaaclopes)</p>
               <div className="mt-1">
                 <input
                   type="text"
@@ -142,7 +142,7 @@ export default function Login() {
               <label className="block text-sm font-medium text-slate-700">
                 Password
               </label>
-              <p className="text-xs text-slate-500 mb-1">Formato: primeironomefaina (ex: ragnar)</p>
+              <p className="text-xs text-slate-500 mb-1">Formato: primeironomefaina (ex: mcqueen)</p>
               <div className="mt-1">
                 <input
                   type="password"
