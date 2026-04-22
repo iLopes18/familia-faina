@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "Member": {
+      "title": "Member",
+      "description": "A member of the Família de Faina",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique ID of the member" },
+        "uid": { "type": "string", "description": "The Firebase Auth UID of the member" },
+        "nome_civil": { "type": "string", "description": "The civil name of the member" },
+        "nome_praxe": { "type": "string", "description": "The praxe name of the member" },
+        "ano_entrada": { "type": "integer", "description": "The year the member joined the family" },
+        "patrao_id": { "type": "string", "description": "The ID of the member's patrao" },
+        "status": { "type": "string", "enum": ["pending", "active"], "description": "The status of the member" },
+        "tipo": { "type": "string", "enum": ["Natural", "Adotado", "Adotada"], "description": "The type of the member" },
+        "photoUrl": { "type": "string", "description": "The URL of the member's profile photo" },
+        "manualShiftX": { "type": "number", "description": "Manual horizontal shift for tree layout" },
+        "manualExtension": { "type": "number", "description": "Manual vertical extension for tree layout" },
+        "curso_faina": { "type": "string", "description": "The course associated with faina" },
+        "curso_atual": { "type": "string", "description": "The current course" }
+      },
+      "required": ["nome_civil", "tipo"]
+    },
+    "Curso": {
+      "title": "Curso",
+      "description": "Definition of a course and its associated colors",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string", "description": "Name of the course" },
+        "cor_tshirt": { "type": "string", "description": "Hex color for Aluvião t-shirt" }
+      },
+      "required": ["nome", "cor_tshirt"]
+    }
+  },
+  "firestore": {
+    "familia": {
+      "schema": "Member",
+      "description": "The collection of all family members"
+    },
+    "cursos": {
+      "schema": "Curso",
+      "description": "The collection of courses and their colors"
+    }
+  }
+}

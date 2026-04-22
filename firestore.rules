@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: familia
+    // Document ID: auto-generated or manual ID
+    // Fields:
+    //   - id: string (required) - The unique ID of the member
+    //   - uid: string (optional) - The Firebase Auth UID of the member
+    //   - nome_civil: string (required) - The civil name of the member
+    //   - nome_praxe: string (optional) - The praxe name of the member
+    //   - ano_entrada: number (optional) - The year the member joined the family
+    //   - patrao_id: string (optional) - The ID of the member's patrao
+    //   - status: string (optional, enum: ['pending', 'active']) - The status of the member
+    //   - tipo: string (required, enum: ['Natural', 'Adotado', 'Adotada']) - The type of the member
+    //   - photoUrl: string (optional) - The URL of the member's profile photo
+    //   - manualShiftX: number (optional) - Manual horizontal shift for tree layout
+    //   - manualExtension: number (optional) - Manual vertical extension for tree layout
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || request.auth.uid == resource.data.uid);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/familia/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "iarafcplopes@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidMember(data) {
+      return data.nome_civil is string && data.nome_civil.size() > 0 && data.nome_civil.size() < 100 &&
+             (!('nome_praxe' in data) || (data.nome_praxe is string)) &&
+             (!('ano_entrada' in data) || (data.ano_entrada is int || data.ano_entrada == null)) &&
+             (!('patrao_id' in data) || (data.patrao_id is string || data.patrao_id == null)) &&
+             (!('status' in data) || (data.status in ['pending', 'active'])) &&
+             (data.tipo in ['Natural', 'Adotado', 'Adotada']) &&
+             (!('photoUrl' in data) || (data.photoUrl is string)) &&
+             (!('manualShiftX' in data) || (data.manualShiftX is number)) &&
+             (!('manualExtension' in data) || (data.manualExtension is number)) &&
+             (!('id' in data) || (data.id is string)) &&
+             (!('uid' in data) || (data.uid is string));
+    }
+
+    match /familia/{memberId} {
+      // Allow public access for basic login and tree functionality
+      allow read, write: if true;
+    }
+
+    match /cursos/{cursoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
