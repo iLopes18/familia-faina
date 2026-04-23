@@ -375,11 +375,6 @@ export default function ProfileView() {
                 <h1 className="text-3xl font-bold text-slate-900">
                   {displayName}
                 </h1>
-                {!isOwnProfile && (
-                  <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-medium uppercase tracking-wider">
-                    Perfil Público
-                  </span>
-                )}
               </div>
               <p className="text-slate-500 text-lg">{profileUser.nome_civil}</p>
               <div className="mt-2 flex flex-wrap gap-2 text-sm text-slate-600">
