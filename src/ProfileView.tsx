@@ -29,6 +29,7 @@ const banners = [
   "/banner2.png", // Adicione os outros nomes conforme estão na pasta public
   "/banner3.png",
   "/banner4.png",
+  "/banner5.png"
 ];
 
 import { calculateMatriculaYear } from "./utils/dateUtils";
