@@ -198,8 +198,8 @@ export const KnotsRenderer: React.FC<{
   hasWhiteNet?: boolean;
   course?: string;
 }> = ({ matriculaYear, gender, hasWhiteNet = false, course }) => {
-  // 1º ano: matriculaYear === 1 -> Sem nós
-  if (matriculaYear <= 1) return null;
+  // Se não tiver nós e não tiver rede branca, não renderiza nada
+  if (matriculaYear < 2 && !hasWhiteNet) return null;
 
   const isFemale = gender === 'female';
   const { primary, secondary } = getCourseColors(course);
@@ -246,8 +246,8 @@ export const KnotsRenderer: React.FC<{
           </g>
         )}
 
-        {/* 5º ano ou superior: adiciona a rede verde sempre */}
-        {matriculaYear >= 5 && (
+        {/* Rede Verde: 5º ano ou superior OU se tiver a branca habilitada */}
+        {(matriculaYear >= 5 || hasWhiteNet) && (
           <image 
             href={isFemale ? "/rede_f.png" : "/rede_m.png"} 
             x="-200" 
@@ -258,8 +258,8 @@ export const KnotsRenderer: React.FC<{
           />
         )}
 
-        {/* 5º ano ou superior: adiciona a rede branca opcional por cima */}
-        {matriculaYear >= 5 && hasWhiteNet && (
+        {/* Rede Branca: Habilitada manualmente pelo utilizador no editor */}
+        {hasWhiteNet && (
           <image 
             href={isFemale ? "/rede_b_f.png" : "/rede_b_m.png"} 
             x="-200" 
