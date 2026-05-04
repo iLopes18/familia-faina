@@ -126,7 +126,7 @@ export default function Login() {
               <label className="block text-sm font-medium text-slate-700">
                 Username
               </label>
-              <p className="text-xs text-slate-500 mb-1">Formato: primeironomeultimonome (ex: renatovala)</p>
+              <p className="text-xs text-slate-500 mb-1">Formato: primeironomeultimonome (ex: isaaclopes)</p>
               <div className="mt-1">
                 <input
                   type="text"
@@ -142,7 +142,7 @@ export default function Login() {
               <label className="block text-sm font-medium text-slate-700">
                 Password
               </label>
-              <p className="text-xs text-slate-500 mb-1">Formato: primeironomefaina (ex: ragnar)</p>
+              <p className="text-xs text-slate-500 mb-1">Formato: primeironomefaina (ex: mcqueen)</p>
               <div className="mt-1">
                 <input
                   type="password"
@@ -183,17 +183,6 @@ export default function Login() {
               >
                 Registar na Família
               </Link>
-            </div>
-            
-            <div className="mt-4">
-              <button
-                onClick={handleUploadData}
-                disabled={uploading}
-                className="w-full flex justify-center items-center py-2.5 px-4 border border-emerald-300 rounded-xl shadow-sm text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors disabled:opacity-50"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                {uploading ? "A transferir..." : "Importar Dados (uploaddata.ts)"}
-              </button>
             </div>
           </div>
         </div>
