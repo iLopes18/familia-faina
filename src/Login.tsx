@@ -7,7 +7,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
-import { Anchor, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { Member } from "./types";
 import { transferToFirebase } from "./uploaddata";
@@ -103,7 +103,7 @@ export default function Login() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="h-16 w-16 bg-emerald-800 rounded-full flex items-center justify-center shadow-lg">
-            <img src="/logo-jd.svg" alt="Logo" className="h-10 w-10 mr-3 brightness-0 invert" />
+            <img src="/logo-jd.svg" alt="Logo" className="h-10 w-10 brightness-0 invert" />
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
@@ -126,7 +126,7 @@ export default function Login() {
               <label className="block text-sm font-medium text-slate-700">
                 Username
               </label>
-              <p className="text-xs text-slate-500 mb-1">Formato: primeironomeultimonome (ex: isaaclopes)</p>
+              <p className="text-xs text-slate-500 mb-1">Formato: primeironomeultimonome (ex: renatovala)</p>
               <div className="mt-1">
                 <input
                   type="text"
@@ -142,7 +142,7 @@ export default function Login() {
               <label className="block text-sm font-medium text-slate-700">
                 Password
               </label>
-              <p className="text-xs text-slate-500 mb-1">Formato: primeironomefaina (ex: mcqueen)</p>
+              <p className="text-xs text-slate-500 mb-1">Formato: primeironomefaina (ex: ragnar)</p>
               <div className="mt-1">
                 <input
                   type="password"
