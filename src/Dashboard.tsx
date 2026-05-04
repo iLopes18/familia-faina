@@ -113,7 +113,10 @@ export default function Dashboard() {
               Tabela Periódica
             </button>
             <button
-              onClick={() => setActiveTab("profile")}
+              onClick={() => {
+                navigate("/");
+                setActiveTab("profile");
+              }}
               className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === "profile"
                   ? "border-emerald-600 text-emerald-600"
