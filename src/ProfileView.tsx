@@ -38,15 +38,16 @@ import { calculateMatriculaYear } from "./utils/dateUtils";
 
 const AvatarDecoration = ({ user }: { user: Member }) => {
   const { primary, secondary } = getCourseColors(user.curso_faina);
-  const matriculaYear = user.avatar?.isFirstYear ? 1 : calculateMatriculaYear(user.ano_entrada);
+  const matriculaYear = user.avatar?.isFirstYear ? 1 : calculateMatriculaYear(user.ano_entrada, user.ano_conclusao);
+  const hasWhiteNet = user.avatar?.hasWhiteNet;
 
-  if (matriculaYear <= 1) return null;
+  if (matriculaYear < 2 && !hasWhiteNet) return null;
 
-  const isNetworkYear = matriculaYear >= 5;
+  const isNetworkBox = matriculaYear >= 5 || hasWhiteNet;
 
   return (
     <div className={`absolute -bottom-4 -left-4 w-10 h-32 rotate-[-15deg] z-20 flex flex-col items-center rounded-lg overflow-hidden backdrop-blur-[1px] border ${
-      isNetworkYear 
+      isNetworkBox 
         ? "bg-emerald-600/10 border-emerald-600/30" 
         : "bg-black/30 border-white/10"
     }`}>
@@ -63,17 +64,16 @@ const AvatarDecoration = ({ user }: { user: Member }) => {
         )}
       </div>
 
-      {/* 2. Network Grid Background (Top Layer - Overlay) - Only for 5th year+ */}
-      {matriculaYear >= 5 && (
+      {/* 2. Network Grid Background (Top Layer - Overlay) - For 5th year+ or hasWhiteNet */}
+      {isNetworkBox && (
         <div className="absolute inset-0 z-20 overflow-hidden" 
           style={{ 
             backgroundImage: `
-              ${user.avatar?.hasWhiteNet ? 'linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%),' : ''}
-              linear-gradient(45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%),
-              linear-gradient(-45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%)
+              ${hasWhiteNet ? 'linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%),' : ''}
+              ${matriculaYear >= 5 ? 'linear-gradient(45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%)' : ''}
             `,
             backgroundSize: '10px 10px',
-            backgroundPosition: user.avatar?.hasWhiteNet ? '2px 2px, 2px 2px, 0 0, 0 0' : '0 0, 0 0',
+            backgroundPosition: hasWhiteNet ? '2px 2px, 2px 2px, 0 0, 0 0' : '0 0, 0 0',
             top: '2px',
             left: '2px',
             width: 'calc(100% - 4px)',
@@ -99,6 +99,7 @@ export default function ProfileView() {
   const [anoEntrada, setAnoEntrada] = useState<string | number>("");
   const [cursoFaina, setCursoFaina] = useState("");
   const [cursoAtual, setCursoAtual] = useState("");
+  const [anoConclusao, setAnoConclusao] = useState<string | number>("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [avatarConfig, setAvatarConfig] = useState<AvatarConfig | undefined>(undefined);
   
@@ -146,6 +147,7 @@ export default function ProfileView() {
           setAnoEntrada(user.ano_entrada || "");
           setCursoFaina(user.curso_faina || "");
           setCursoAtual(user.curso_atual || "");
+          setAnoConclusao(user.ano_conclusao || "");
           setBannerUrl(user.bannerUrl || "");
           setAvatarConfig(user.avatar);
           
@@ -211,6 +213,7 @@ export default function ProfileView() {
     
     // Preparar dados para evitar violações de regras (ano_entrada deve ser int ou null, não string vazia)
     const normalizedAnoEntrada = anoEntrada === "" ? null : Number(anoEntrada);
+    const normalizedAnoConclusao = anoConclusao === "" ? null : Number(anoConclusao);
     const finalNomeCivil = nomeCivil.trim() || profileUser.nome_civil || "Membro";
 
     try {
@@ -218,6 +221,7 @@ export default function ProfileView() {
         nome_civil: finalNomeCivil,
         nome_praxe: nomePraxe || "",
         ano_entrada: (normalizedAnoEntrada !== null && !isNaN(normalizedAnoEntrada)) ? normalizedAnoEntrada : null,
+        ano_conclusao: (normalizedAnoConclusao !== null && !isNaN(normalizedAnoConclusao)) ? normalizedAnoConclusao : null,
         curso_faina: cursoFaina || "",
         curso_atual: cursoAtual || "",
         bannerUrl: bannerUrl || "",
@@ -376,6 +380,11 @@ export default function ProfileView() {
                 <h1 className="text-3xl font-bold text-slate-900">
                   {displayName}
                 </h1>
+                {!isOwnProfile && (
+                  <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-medium uppercase tracking-wider">
+                    Perfil Público
+                  </span>
+                )}
               </div>
               <p className="text-slate-500 text-lg">{profileUser.nome_civil}</p>
               <div className="mt-2 flex flex-wrap gap-2 text-sm text-slate-600">
@@ -474,6 +483,51 @@ export default function ProfileView() {
                     placeholder="Ex: Mestrado em IA"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Ano de Conclusão (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={anoConclusao}
+                    onChange={(e) => setAnoConclusao(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                    placeholder="Ex: 2028 (Para o avatar no tempo)"
+                  />
+                </div>
+                
+                {pedacos.length > 0 && (
+                  <div className="md:col-span-2 pt-4 border-t border-slate-200 mt-2">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                      <Network className="w-5 h-5 mr-2 text-emerald-600" />
+                      Ordenar Pedaços
+                    </h3>
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                      {pedacos.map((p, idx) => (
+                        <div key={p.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                          <span className="font-medium text-slate-700">{p.nome_praxe || p.nome_civil}</span>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleReorder(p.id.toString(), 'up')}
+                              disabled={idx === 0 || loading}
+                              className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-emerald-600 disabled:opacity-20 transition-colors border border-slate-100"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleReorder(p.id.toString(), 'down')}
+                              disabled={idx === pedacos.length - 1 || loading}
+                              className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-emerald-600 disabled:opacity-20 transition-colors border border-slate-100"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     Escolher Banner
