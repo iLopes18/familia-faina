@@ -3,10 +3,11 @@ import { collection, onSnapshot, query, doc, updateDoc } from "firebase/firestor
 import { db } from "./firebase";
 import { Member } from "./types";
 import { motion } from "framer-motion";
-import { ZoomIn, ZoomOut, Maximize, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Edit2, Check, X } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Edit2, Check, X, ArrowLeftCircle } from "lucide-react";
 import { getCourseColors, AzelhaKnot, CoximKnot } from "./components/KnotIcons";
 import AvatarRenderer from "./components/Avatar/AvatarRenderer";
 import { calculateMatriculaYear } from "./utils/dateUtils";
+import { useNavigate } from "react-router-dom";
 
 const getDescendantCount = (userId: string | number, allUsers: Member[]): number => {
   const children = allUsers.filter(u => u.patrao_id?.toString().trim() === userId.toString().trim());
@@ -27,13 +28,18 @@ const TreeNode: React.FC<{
   branchExtension?: number; 
   shiftX?: number;
   isEditing: boolean;
+  onFocus: (userId: string) => void;
+  isFocused: boolean;
 }> = ({
   user,
   allUsers,
   branchExtension = 0,
   shiftX = 0,
-  isEditing
+  isEditing,
+  onFocus,
+  isFocused
 }) => {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(true);
 
   const children = allUsers
@@ -133,18 +139,27 @@ const TreeNode: React.FC<{
       <motion.div
         whileHover={{ scale: 1.05 }}
         className="z-10 flex flex-col items-center cursor-pointer relative w-[90px]"
-        onClick={() => !isEditing && setExpanded(!expanded)}
+        onClick={() => {
+          if (isEditing) return;
+          onFocus(user.id.toString());
+        }}
+        onDoubleClick={() => {
+          navigate(`/profile/${user.id}`);
+        }}
       >
         <div className="relative">
           <div className="absolute -bottom-1 -left-1 scale-[0.35] origin-bottom-right z-20 pointer-events-none">
             {(() => {
-              const matriculaYear = user.avatar?.isFirstYear ? 1 : calculateMatriculaYear(user.ano_entrada);
-              if (matriculaYear <= 1) return null;
+              const matriculaYear = user.avatar?.isFirstYear ? 1 : calculateMatriculaYear(user.ano_entrada, user.ano_conclusao);
+              const hasWhiteNet = user.avatar?.hasWhiteNet;
+              if (matriculaYear < 2 && !hasWhiteNet) return null;
+              
               const { primary, secondary } = getCourseColors(user.curso_faina);
+              const isNetworkBox = matriculaYear >= 5 || hasWhiteNet;
 
               return (
                 <div className={`absolute -bottom-1 -left-1 w-10 h-28 rounded-lg rotate-[-15deg] z-20 flex flex-col items-center overflow-hidden border backdrop-blur-[1px] ${
-                  matriculaYear >= 5 
+                  isNetworkBox 
                     ? "bg-emerald-600/10 border-emerald-600/20" 
                     : "bg-black/30 border-white/10"
                 }`}>
@@ -161,16 +176,15 @@ const TreeNode: React.FC<{
                   </div>
 
                   {/* 2. Network Grid Background (Top Layer - Overlay) */}
-                  {matriculaYear >= 5 && (
+                  {isNetworkBox && (
                     <div className="absolute inset-0 z-20" 
                       style={{ 
                         backgroundImage: `
-                          ${user.avatar?.hasWhiteNet ? 'linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%),' : ''}
-                          linear-gradient(45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%),
-                          linear-gradient(-45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%)
+                          ${hasWhiteNet ? 'linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%),' : ''}
+                          ${matriculaYear >= 5 ? 'linear-gradient(45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgba(5, 150, 105, 0.6) 50%, transparent 55%)' : ''}
                         `,
                         backgroundSize: '8px 8px',
-                        backgroundPosition: user.avatar?.hasWhiteNet ? '2px 2px, 2px 2px, 0 0, 0 0' : '0 0, 0 0',
+                        backgroundPosition: hasWhiteNet ? '2px 2px, 2px 2px, 0 0, 0 0' : '0 0, 0 0',
                         top: '1px',
                         left: '1px',
                         width: 'calc(100% - 2px)',
@@ -298,6 +312,8 @@ const TreeNode: React.FC<{
                       branchExtension={layout.extension} 
                       shiftX={layout.shiftSlots} 
                       isEditing={isEditing}
+                      onFocus={onFocus}
+                      isFocused={isFocused}
                     />
                   </div>
                 </div>
@@ -315,6 +331,7 @@ export default function TreeView() {
   const [loading, setLoading] = useState(true);
   const [scale, setScale] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
+  const [focusedUserId, setFocusedUserId] = useState<string | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
@@ -384,20 +401,32 @@ export default function TreeView() {
     );
 
   const userIds = new Set(users.map((u) => u.id?.toString()));
-  const founders = users
-    .filter((u) => !u.patrao_id || !userIds.has(u.patrao_id.toString()))
-    .sort((a, b) => {
-      // First sort by order if available
-      if (a.order !== undefined && b.order !== undefined) {
-        return a.order - b.order;
-      }
-      if (a.order !== undefined) return -1;
-      if (b.order !== undefined) return 1;
+  
+  let treeRoots: Member[] = [];
+  
+  if (focusedUserId) {
+    const focusedUser = users.find(u => u.id.toString() === focusedUserId);
+    if (focusedUser) {
+      treeRoots = [focusedUser];
+    } else {
+      setFocusedUserId(null); // Fallback
+    }
+  } else {
+    treeRoots = users
+      .filter((u) => !u.patrao_id || !userIds.has(u.patrao_id.toString()))
+      .sort((a, b) => {
+        // First sort by order if available
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        if (a.order !== undefined) return -1;
+        if (b.order !== undefined) return 1;
 
-      const idA = parseInt(a.id as string) || 0;
-      const idB = parseInt(b.id as string) || 0;
-      return idA - idB;
-    });
+        const idA = parseInt(a.id as string) || 0;
+        const idB = parseInt(b.id as string) || 0;
+        return idA - idB;
+      });
+  }
 
   return (
     <div 
@@ -406,6 +435,16 @@ export default function TreeView() {
     >
       {/* Zoom & Edit Controls */}
       <div className="sticky top-4 left-4 w-fit flex gap-2 z-30 bg-white/90 backdrop-blur-sm p-1.5 rounded-xl shadow-md border border-slate-200 mb-4 ml-4">
+        {focusedUserId && (
+          <button 
+            onClick={() => setFocusedUserId(null)}
+            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-emerald-800 flex items-center gap-1 px-3 border border-emerald-100"
+            title="Voltar à Árvore Completa"
+          >
+            <ArrowLeftCircle className="w-5 h-5" />
+            <span className="text-sm font-medium">Voltar</span>
+          </button>
+        )}
         <button 
           onClick={() => setScale(s => Math.min(s * 1.2, 3))} 
           className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
@@ -443,10 +482,17 @@ export default function TreeView() {
         style={{ transform: `scale(${scale})` }}
       >
         <div ref={treeRef} className="flex justify-center gap-16">
-          {founders.map((founder) => (
-            <TreeNode key={founder.id} user={founder} allUsers={users} isEditing={isEditing} />
+          {treeRoots.map((root) => (
+            <TreeNode 
+              key={root.id} 
+              user={root} 
+              allUsers={users} 
+              isEditing={isEditing} 
+              onFocus={setFocusedUserId}
+              isFocused={focusedUserId === root.id.toString()}
+            />
           ))}
-          {founders.length === 0 && (
+          {treeRoots.length === 0 && (
             <div className="text-slate-500 text-center mt-20">
               Nenhum membro ativo encontrado na árvore.
             </div>
