@@ -49,7 +49,7 @@ const AvatarEditor: React.FC<AvatarEditorProps> = ({ member, onChange }) => {
     />
   );
 
-  const realMatriculaYear = calculateMatriculaYear(member.ano_entrada);
+  const realMatriculaYear = calculateMatriculaYear(member.ano_entrada, member.ano_conclusao);
   const showAdvancedClothing = realMatriculaYear > 1;
 
   return (
@@ -219,13 +219,29 @@ const AvatarEditor: React.FC<AvatarEditorProps> = ({ member, onChange }) => {
           </>
         )}
 
-        {/* White Net Option for 5th Year+ */}
+        {/* White Net Option for 5th Year+ or Finalists */}
         {(() => {
-          const matriculaYear = calculateMatriculaYear(member.ano_entrada);
-          if (matriculaYear < 5) return null;
+          const mYear = calculateMatriculaYear(member.ano_entrada, member.ano_conclusao);
+          const entry = Number(member.ano_entrada);
+          const conclusion = Number(member.ano_conclusao);
+          
+          let isFinalistOrPast = false;
+          if (!isNaN(entry) && !isNaN(conclusion)) {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            const currentStdMatricula = (currentYear - entry) + (currentMonth >= 9 ? 1 : 0);
+            const conclusionDeltaYear = (conclusion - entry) + 1;
+            
+            if (currentStdMatricula >= conclusionDeltaYear || currentStdMatricula >= 5) {
+              isFinalistOrPast = true;
+            }
+          }
+
+          if (mYear < 5 && !isFinalistOrPast) return null;
 
           return (
-            <Section title="Estatuto (5º Ano+)">
+            <Section title="Estatuto (Finalista/Concluído)">
               <label className="flex items-center gap-3 cursor-pointer group">
                 <input 
                   type="checkbox" 
