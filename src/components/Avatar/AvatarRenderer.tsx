@@ -41,7 +41,7 @@ const AvatarRenderer: React.FC<AvatarRendererProps> = ({ member, size = 100, cla
   const hColor = (HAIR_COLORS as any)[config.hairColor] || HAIR_COLORS.preto;
   const gColor = (GLASSES_COLORS as any)[config.glassesColor] || GLASSES_COLORS.preto;
   
-  const matriculaYear = config.isFirstYear ? 1 : calculateMatriculaYear(member.ano_entrada);
+  const matriculaYear = config.isFirstYear ? 1 : calculateMatriculaYear(member.ano_entrada, member.ano_conclusao);
 
   return (
     <div className={`relative inline-block overflow-hidden rounded-full bg-[#fafafa] ${className}`} style={{ width: size, height: size }}>
