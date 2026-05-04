@@ -44,20 +44,20 @@ export default function PeriodicTableView() {
     return getGeneration(patrao, allUsers) + 1;
   };
 
-  // Group by generation
-  const groupedByGen = users.reduce(
+  // Group by entry year
+  const groupedByYear = users.reduce(
     (acc, user) => {
-      const gen = getGeneration(user, users);
-      if (!acc[gen]) acc[gen] = [];
-      acc[gen].push(user);
+      const year = user.ano_entrada || 0;
+      if (!acc[year]) acc[year] = [];
+      acc[year].push(user);
       return acc;
     },
     {} as Record<number, Member[]>,
   );
 
-  const generations = Object.keys(groupedByGen)
+  const years = Object.keys(groupedByYear)
     .map(Number)
-    .sort((a, b) => a - b);
+    .sort((a, b) => b - a); // Newest years first
 
   const getInitials = (user: Member) => {
     const parts = user.nome_civil.split(" ");
@@ -70,17 +70,17 @@ export default function PeriodicTableView() {
   return (
     <div className="w-full h-full overflow-auto bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-inner min-h-[600px]">
       <div className="flex flex-col gap-8">
-        {generations.map((gen) => (
-          <div key={gen} className="flex flex-col">
+        {years.map((year) => (
+          <div key={year} className="flex flex-col">
             <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center">
-              <span className="bg-emerald-800 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 shadow-md">
-                {gen}
+              <span className="bg-emerald-800 text-white px-3 h-8 rounded-full flex items-center justify-center mr-3 shadow-md">
+                {year || "N/A"}
               </span>
-              Geração {gen}
+              Entrada em {year || "N/A"}
             </h3>
             <div className="flex gap-4 flex-wrap">
-              {groupedByGen[gen]
-                .sort((a, b) => (a.ano_entrada || 0) - (b.ano_entrada || 0))
+              {groupedByYear[year]
+                .sort((a, b) => a.nome_civil.localeCompare(b.nome_civil))
                 .map((user, index) => {
                   const isAdopted =
                     user.tipo === "Adotado" || user.tipo === "Adotada";
@@ -131,7 +131,7 @@ export default function PeriodicTableView() {
             </div>
           </div>
         ))}
-        {generations.length === 0 && (
+        {years.length === 0 && (
           <div className="text-slate-500 text-center mt-20">
             Nenhum membro ativo encontrado.
           </div>
