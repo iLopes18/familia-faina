@@ -66,7 +66,7 @@ export default function Dashboard() {
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Anchor className="h-8 w-8 text-emerald-400 mr-3" />
+              <img src="/logo-jd.svg" alt="Logo" className="h-10 w-10 mr-3 brightness-0 invert" />
               <span className="font-bold text-xl tracking-tight">
                 Família de Faina
               </span>
