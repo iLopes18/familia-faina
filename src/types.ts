@@ -12,6 +12,7 @@ export interface Member {
   manualExtension?: number; // in pixels
   curso_faina?: string;
   curso_atual?: string;
+  ano_conclusao?: number | null;
   bannerUrl?: string;
   order?: number;
   avatar?: AvatarConfig;
